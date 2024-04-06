@@ -1,32 +1,26 @@
-name: Snapshot Release
-
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - '**.scala'
-      - '**.java'
-      - '**.sbt'
-    tag:
-      - '!v*'
-
 jobs:
   publish_snapshots:
     name: Publish snapshots
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 10000
-      # Fetch all tags so that sbt-dynver can find the previous release version
-      - run: git fetch --tags
-      - uses: actions/setup-java@v4
-        with:
-          java-version: 11
-          distribution: adopt
-      - name: Publish snapshots
-        env:
-          SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
-          SONATYPE_PASSWORD: '${{ secrets.SONATYPE_PASS }}'
-        run: ./sbt publish
+    - continue-on-error: true
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 10000
+    - continue-on-error: true
+      run: git fetch --tags
+    - continue-on-error: true
+      uses: actions/setup-java@v4
+      with:
+        distribution: adopt
+        java-version: 11
+    - continue-on-error: true
+      env:
+        SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASS }}
+        SONATYPE_USERNAME: ${{ secrets.SONATYPE_USER }}
+      name: Publish snapshots
+      run: ./sbt publish
+name: Snapshot Release
+on:
+  repository_dispatch:
+    types: trigger-ga___snapshot.yml
